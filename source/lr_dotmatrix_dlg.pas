@@ -48,6 +48,7 @@ type
     btnOK: TBitBtn;
     btnCancel: TBitBtn;
     cboOptionsLineSpacing: TComboBox;
+    cboEncoding: TComboBox;
     lblOptionsLineSpacing: TLabel;
     lblOptionsLineSpacingCustom: TLabel;
     // printer
@@ -62,7 +63,10 @@ type
     lblOptionsAutoNewPageLines: TLabel;
     edtOptionsAutoNewPageLines: TSpinEdit;
     edtOptionsLineSpacingCustom: TSpinEdit;
+    radRemoveAccents: TRadioButton;
+    radCustomEncoding: TRadioButton;
     procedure cboOptionsLineSpacingChange(Sender: TObject);
+    procedure radCustomEncodingClick(Sender: TObject);
   end;
 
 var
@@ -85,6 +89,11 @@ begin
     edtOptionsLineSpacingCustom.Enabled := False;
     edtOptionsLineSpacingCustom.Value := 0;
   end;
+end;
+
+procedure TlrDMDlg.radCustomEncodingClick(Sender: TObject);
+begin
+  cboEncoding.Enabled := radCustomEncoding.Checked;
 end;
 
 end.

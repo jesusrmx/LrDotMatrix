@@ -204,6 +204,13 @@ begin
 
         // Printer Index
         Prn.PrinterIndex := lrDMDlg.cboPrinter.ItemIndex;
+
+        // Encoding
+        if lrDMDlg.radRemoveAccents.Checked then
+          vlrDMConfig.Encoding := ''
+        else
+          vlrDMConfig.Encoding := lrDMDlg.cboEncoding.Text;
+
         // Print
         TlrDMReport(fDoc).PrintPreparedReport('', lrDMDlg.edtCopies.Value);
       end;

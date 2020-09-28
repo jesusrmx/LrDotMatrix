@@ -30,6 +30,7 @@ interface
 uses
   SysUtils,
   Classes,
+  LConvEncoding,
   // lazreport
   LR_Class,
   LR_Prntr;
@@ -74,6 +75,7 @@ type
     fAutoNewPageLines: integer;
     fLineSpacing: TlrDmLineSpacing;
     fLineSpacingCustomValue: integer;
+    fEncoding: string;
   public
     ESCCode: array[0..cmdMax] of string;
     constructor Create;
@@ -81,6 +83,7 @@ type
   published
     property AutoNewPage: boolean read fAutoNewPage write fAutoNewPage; // AutoNewPage false = inject
     property AutoNewPageLines: integer read fAutoNewPageLines write fAutoNewPageLines;
+    property Encoding: string read fEncoding write fEncoding;
     property LineSpacing: TlrDmLineSpacing read fLineSpacing write fLineSpacing;
     property LineSpacingCustomValue: integer read fLineSpacingCustomValue write fLineSpacingCustomValue;
   end;
@@ -117,8 +120,10 @@ var
 
 implementation
 
+uses
+  LazUTF8;
 
-
+{
 function ConvertAccents(const aData: string): string;
 var
   vChar, vCharPrevious: string;
@@ -173,6 +178,32 @@ begin
         Result += vChar;
     end;
   end;
+end;
+}
+
+function ConvertAccents(const aData: string): string;
+var
+  i: Integer;
+begin
+  result := '';
+  for i := 1 to UTF8Length(aData) do
+    case UTF8Copy(aData, i, 1) of
+      'á','à','ã','â','ä':  result += 'a';
+      'Á','À','Ã','Â','Ä':  result += 'A';
+      'ó','ò','õ','ô','ö':  result += 'o';
+      'Ó','Ò','Õ','Ô','Ö':  result += 'O';
+      'é','è','ê','ë':      result += 'e';
+      'É','È','Ê','Ë':      result += 'E';
+      'í','ì','î','ï':      result += 'i';
+      'Í','Ì','Î','Ï':      result += 'I';
+      'ú','ù','û','ü':      result += 'u';
+      'Ú','Ù','Û','Ü':      result += 'U';
+      'ç':                  result += 'c';
+      'Ç':                  result += 'C';
+      'º':                  result += '*';
+      'ª':                  result += '*';
+      else                  result += UTF8Copy(aData, i, 1);
+    end;
 end;
 
 function PadR(const aData: string; aNewLength: integer; aFillChar: char): string;
@@ -241,6 +272,7 @@ begin
   ESCCode[cmd6LPI] := #27#48;
   ESCCode[cmd8LPI] := #27#50;
   ESCCode[cmdCustomLPI] := #27#65;
+  fEncoding := '';
 end;
 
 procedure TlrDMConfig.AddingLineSpacingTo(aDestination: TStrings);
@@ -265,19 +297,25 @@ begin
 end;
 
 procedure TlrDMFilter.WriteStr(const aData: string; aAlignment: TAlignment; aNewLength: integer; aFillChar: char);
+var
+  aConverted: String;
 begin
+  if vlrDMConfig.Encoding='' then
+    aConverted := ConvertAccents(aData)
+  else
+    aConverted := ConvertEncoding(aData, EncodingUTF8, vlrDMConfig.Encoding);
   case aAlignment of
     taCenter:
     begin
-      WriteStr(PadC(ConvertAccents(aData), aNewLength, aFillChar));
+      WriteStr(PadC(aConverted, aNewLength, aFillChar));
     end;
     taLeftJustify:
     begin
-      WriteStr(PadL(ConvertAccents(aData), aNewLength, aFillChar));
+      WriteStr(PadL(aConverted, aNewLength, aFillChar));
     end;
     taRightJustify:
     begin
-      WriteStr(PadR(ConvertAccents(aData), aNewLength, aFillChar));
+      WriteStr(PadR(aConverted, aNewLength, aFillChar));
     end;
   end;
 end;
