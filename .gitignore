@@ -1,0 +1,12 @@
+**/lib
+**/backup
+**/bin
+*.xml
+*.exe
+*.bak
+*.ppu
+*.o
+*.or
+*.dbg
+*.compiled
+*.lps
